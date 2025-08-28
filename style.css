@@ -108,17 +108,9 @@ tr.fade-out {
   }
 }
 
-#spinner {
-  display: none;
-  text-align: center;
-  padding: 10px;
-  font-size: 12px;
-  color: #005288;
-  animation: pulse 1s infinite;
-}
-
 @keyframes pulse {
   0% { opacity: 0.3; }
   50% { opacity: 1; }
   100% { opacity: 0.3; }
 }
+
