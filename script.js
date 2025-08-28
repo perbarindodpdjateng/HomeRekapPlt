@@ -8,8 +8,6 @@ const formatTanggal = (input) => {
 };
 
 async function fetchData() {
-  const spinner = document.getElementById("spinner");
-  spinner.style.display = "block";
 
   try {
     const res = await fetch('https://script.google.com/macros/s/AKfycbxoZvhFliYUB10gTxlxXl7CBd5_35gqDzOIJBpfRioNOpS3uAdlcYXjP6qGbO9sm6qP5g/exec', { cache: 'no-store' });
@@ -18,9 +16,7 @@ async function fetchData() {
     renderTable(data);
   } catch (e) {
     console.error("Gagal memuat:", e);
-  } finally {
-    spinner.style.display = "none";
-  }
+  } 
 }
 
 function renderTable(data) {
@@ -84,3 +80,4 @@ document.getElementById("searchInput").addEventListener("input", function () {
 fetchData();
 setInterval(fetchData, 10000);
 setInterval(rollingMarquee, 5000);
+
