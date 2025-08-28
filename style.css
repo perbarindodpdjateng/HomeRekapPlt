@@ -8,7 +8,7 @@ body {
   font-family: 'Segoe UI', Roboto, sans-serif;
   background-color: #fefefe;
   color: #333;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 #controls {
@@ -16,7 +16,7 @@ body {
   flex-wrap: wrap;
   gap: 8px;
   padding: 8px;
-  font-size: 10px;
+  font-size: 11px;
   background-color: #f9f9f9;
   border-bottom: 1px solid #eee;
 }
@@ -103,7 +103,7 @@ tr.fade-out {
 
 @media (max-width: 600px) {
   th, td {
-    font-size: 10px;
+    font-size: 11px;
     padding: 6px;
   }
 }
@@ -113,4 +113,5 @@ tr.fade-out {
   50% { opacity: 1; }
   100% { opacity: 0.3; }
 }
+
 
