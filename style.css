@@ -48,7 +48,7 @@ button:hover {
 }
 
 .table-wrapper {
-  height: 350px;
+  height: 450px;
   overflow: auto;
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -113,6 +113,7 @@ tr.fade-out {
   50% { opacity: 1; }
   100% { opacity: 0.3; }
 }
+
 
 
 
