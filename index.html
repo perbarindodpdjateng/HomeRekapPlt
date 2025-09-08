@@ -1,1 +1,24 @@
-<!doctypehtml><html lang=id><meta charset=UTF-8><title>Rekap Peserta Marquee</title><meta content="width=device-width,initial-scale=1"name=viewport><link href=style.css rel=stylesheet><link href=https://fonts.googleapis.com rel=preconnect><link href=https://cdn.jsdelivr.net rel=preconnect crossorigin><div id=controls><input id=searchInput placeholder=Cari...> <button id=marqueeBtn>⏸</button> <span id=rowCount>(0)</span></div><div class=table-wrapper><table id=dataTable></table></div><script defer src=script.js></script><script>document.getElementById("marqueeBtn").addEventListener("click",toggleMarquee)</script>
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rekap Peserta</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <input id="search" placeholder="Cari..." autocomplete="off" />
+    <button id="toggle" aria-label="Jeda">⏸</button>
+    <span id="count">0</span>
+  </header>
+
+  <main id="viewport">
+    <table id="table" aria-live="polite"></table>
+  </main>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
