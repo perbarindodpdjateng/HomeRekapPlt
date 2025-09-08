@@ -1,4 +1,4 @@
-const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxoZvhFliYUB10gTxlxXl7CBd5_35gqDzOIJBpfRioNOpS3uAdlcYXjP6qGbO9sm6qP5g/exec';
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycbx5Kx0-sBucXwHQlCIm46nLhWEzUoAPN_IF93CSi3rjBtv1b9Tev01gd5Kjzr34MVpOuw/exec';
 
 let data = [], paused = false, timer = null;
 
@@ -58,3 +58,4 @@ $('#search').oninput = e => {
 load();
 setInterval(load, 10_000);
 setInterval(roll, 5_000);
+
