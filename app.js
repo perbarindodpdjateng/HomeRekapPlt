@@ -1,4 +1,4 @@
-const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxoZvhFliYUB10gTxlxXl7CBd5_35gqDzOIJBpfRioNOpS3uAdlcYXjP6qGbO9sm6qP5g/exec';
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzkYy6CU-SzBzLVqRg0AySO5k3gvvannK4BZH3h_CYrhfSBZAn1XRqbNqgUNnINDtgz_g/exec';
 
 let data = [];
 const $ = sel => document.querySelector(sel);
@@ -40,3 +40,4 @@ $('#search').oninput = e => {
 };
 load();
 setInterval(load, 10_000);
+
