@@ -1,158 +1,36 @@
-<!doctype html>
-<html lang="id">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rekap Peserta</title>
-  <style>
-    :root {
-      --bg: #ffffff;
-      --fg: #111;
-      --accent: #005288;
-      --line: #e5e5e5;
-      --even: #f2f6fa;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-size: 12px;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      background: var(--bg);
-      color: var(--fg);
-    }
-
-    header {
-      display: flex;
-      gap: 4px;
-      padding: 4px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    #search {
-      flex: 1;
-      padding: 4px 6px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-    }
-
-    #count {
-      margin-left: auto;
-      align-self: center;
-      font-weight: 600;
-    }
-
-    main {
-      flex: 1;
-      overflow: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th {
-      position: sticky;
-      top: 0;
-      background: var(--accent);
-      color: #fff;
-      text-align: left;
-      padding: 4px 6px;
-      z-index: 1;
-    }
-
-    td {
-      padding: 4px 6px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    tbody tr:nth-child(even) td {
-      background: var(--even);
-    }
-
-    tr:hover td {
-      background: #d0e7ff;
-    }
-
-    th:nth-child(3),
-    td:nth-child(3) {
-      display: none;
-    }
-
-    a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <input id="search" placeholder="Cari…" autocomplete="off" />
-    <span id="count">0</span>
-  </header>
-  <main>
-    <table id="table"></table>
-  </main>
-
-  <script>
-    const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxoZvhFliYUB10gTxlxXl7CBd5_35gqDzOIJBpfRioNOpS3uAdlcYXjP6qGbO9sm6qP5g/exec';
-
-    const $ = s => document.querySelector(s);
-    const fmt = d => {
-      const t = new Date(d);
-      return isNaN(t) ? d : `${String(t.getDate()).padStart(2, '0')}/${String(t.getMonth() + 1).padStart(2, '0')}/${String(t.getFullYear()).slice(-2)}`;
-    };
-
-    let data = [];
-
-    function render(list) {
-      const isHead = i => i === 0;
-      $('#table').innerHTML = list.map((row, i) =>
-        `<tr>${row.map((cell, j) => {
-          if (isHead(i)) return `<th>${cell}</th>`;
-          if (j === 0 && typeof row[2] === 'string' && row[2].startsWith('http'))
-            return `<td><a href="${row[2]}" target="_blank" rel="noreferrer">${cell}</a></td>`;
-          if (j === 0 || j === 4) return `<td>${fmt(cell)}</td>`;
-          return `<td>${cell}</td>`;
-        }).join('')}</tr>`
-      ).join('');
-      $('#count').textContent = list.length - 1;
-    }
-
-    $('#search').oninput = e => {
-      const kw = e.target.value.trim().toLowerCase();
-      render(kw ? data.filter((r, i) => i === 0 || r.some(c => String(c).toLowerCase().includes(kw))) : data);
-    };
-
-    async function load() {
-      try {
-        const raw = await fetch(ENDPOINT, { cache: 'no-store' }).then(r => r.json());
-        if (JSON.stringify(raw) !== JSON.stringify(data)) {
-          data = raw;
-          render(data);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) load();
-    });
-
-    load();
-  </script>
-</body>
-</html>
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Rekap</title>
+<style>
+body{margin:0;font:12px/1.4 system-ui;background:#fff;color:#111}
+input{width:100%;padding:6px;border:1px solid #bbb;border-radius:3px}
+table{width:100%;border-collapse:collapse}
+th{position:sticky;top:0;background:#005288;color:#fff;text-align:left;padding:4px 6px;font-weight:600}
+td{padding:4px 6px;border-bottom:1px solid #e5e5e5}
+tbody tr:nth-child(even) td{background:#f2f6fa}
+tr:hover td{background:#d0e7ff}
+</style>
+<input id=q placeholder="Cari…">
+<table id=t></table>
+<script>
+const URL='https://script.google.com/macros/s/AKfycbxoZvhFliYUB10gTxlxXl7CBd5_35gqDzOIJBpfRioNOpS3uAdlcYXjP6qGbO9sm6qP5g/exec';
+let d=[];
+async function load(){
+  const r=await fetch(URL,{cache:'no-store'}).then(x=>x.json());
+  if(JSON.stringify(r)!=JSON.stringify(d)){d=r;render(d);}
+}
+function render(a){
+  t.innerHTML=a.map((r,i)=>`<tr>${
+    r.map((c,j)=>{
+      if(!i)return`<th>${c}</th>`;
+      if(!j&&typeof r[2]=='string'&&r[2].startsWith('http'))return`<td><a href="${r[2]}" target=_blank>${c}</a></td>`;
+      if(j==0||j==4)c=new Date(c);if(c instanceof Date)c=`${(c.getDate()+'').padStart(2,0)}/${(c.getMonth()+1+'').padStart(2,0)}/${c.getFullYear()%100}`;
+      return`<td>${c}</td>`
+    }).join``
+  }</tr>`).join``;
+}
+q.oninput=e=>{
+  const k=e.target.value.trim().toLowerCase();
+  render(k?d.filter((r,i)=>!i||r.some(x=>(''+x).toLowerCase().includes(k))):d);
+};
+addEventListener('visibilitychange',()=>!document.hidden&&load());
+load();
+</script>
