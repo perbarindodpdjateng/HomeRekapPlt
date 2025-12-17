@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Rekap Peserta</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #444;
+      --accent: #0066cc;
+      --line: #e5e5e5;
+      --even: #f7f9fb;
+      --hdrH: 40px;
+      --pgH: 36px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--fg);
+    }
+    h2 {
+      text-align: center;
+      font-size: 1.2em;
+      padding: .3em 0 .1em;
+    }
+    header {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border-bottom: 1px solid var(--line);
+    }
+    #search {
+      flex: 1;
+      padding: 4px 6px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    #count {
+      margin-left: auto;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    main {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .table-wrapper {
+      flex: 1 1 auto;
+      overflow: auto;
+      max-width: 100vw;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+    }
+
+  th:nth-child(2),
+  td:nth-child(2) {
+    width: 5em;           /* tambahan ±2 karakter dibanding default ~12em */
+    white-space: wrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+
+
+    th {
+      position: sticky;
+      top: 0;
+      background: var(--accent);
+      color: #fff;
+      text-align: left;
+      padding: 4px 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.25;
+    }
+    td {
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 1rem;
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.25;
+      vertical-align: top;
+    }
+    tbody tr:nth-child(even) td { background: var(--even); }
+    th:nth-child(3), td:nth-child(3) { display: none; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    #skeleton {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+    }
+    #skeleton span {
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 2px;
+    }
+
+    #paging {
+      flex: 0 0 var(--pgH);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 3px;
+      border-top: 1px solid var(--line);
+    }
+    #paging button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--fg);
+      font-size: 1rem;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    #paging button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    #paging button:disabled { opacity: .4; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <h2>PELATIHAN LAINNYA</h2>
+  <header>
+    <input id="search" placeholder="Cari…" autocomplete="off"/>
+    <span id="count">0</span>
+  </header>
+
+  <main>
+    <div id="skeleton">
+      <span style="width:40%"></span>
+      <span style="width:20%"></span>
+      <span style="width:30%"></span>
+    </div>
+
+    <div class="table-wrapper">
+      <table id="table" hidden></table>
+    </div>
+  </main>
+
+  <div id="paging"></div>
+
+  <script>
+    const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxoZvhFliYUB10gTxlxXl7CBd5_35gqDzOIJBpfRioNOpS3uAdlcYXjP6qGbO9sm6qP5g/exec';
+    const ROWS_PER_PAGE = 4;
+
+    const $ = s => document.querySelector(s);
+    const fmt = d => {
+      const t = new Date(d);
+      return isNaN(t) ? d : `${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')}/${String(t.getFullYear()).slice(-2)}`;
+    };
+
+    let data = [];
+    let filtered = [];
+    let currentPage = 1;
+
+    function renderTable() {
+      const head = filtered[0] || [];
+      const start = (currentPage - 1) * ROWS_PER_PAGE + 1;
+      const end   = start + ROWS_PER_PAGE;
+      const pageRows = filtered.slice(0, 1).concat(filtered.slice(start, end));
+
+      $('#table').innerHTML = pageRows.map((row, i) =>
+        `<tr>${row.map((cell, j) => {
+          if (i === 0) return `<th>${cell}</th>`;
+          if (j === 0 && typeof row[2] === 'string' && row[2].startsWith('http'))
+            return `<td><a href="${row[2]}" target="_blank" rel="noreferrer">${cell}</a></td>`;
+          if (j === 0 || j === 4) return `<td>${fmt(cell)}</td>`;
+          return `<td>${cell}</td>`;
+        }).join('')}</tr>`
+      ).join('');
+
+      $('#count').textContent = filtered.length > 0 ? filtered.length - 1 : 0;
+      renderPaging();
+    }
+
+    function renderPaging() {
+      const totalRows = filtered.length - 1;
+      if (totalRows <= 0) { $('#paging').innerHTML = ''; return; }
+
+      const totalPage = Math.ceil(totalRows / ROWS_PER_PAGE);
+      let html = '';
+      if (currentPage > 1) html += `<button data-p="${currentPage-1}">‹</button>`;
+
+      for (let p = 1; p <= totalPage; p++) {
+        html += `<button class="${p === currentPage ? 'active' : ''}" data-p="${p}">${p}</button>`;
+      }
+
+      if (currentPage < totalPage) html += `<button data-p="${currentPage+1}">›</button>`;
+      $('#paging').innerHTML = html;
+
+      $('#paging').onclick = e => {
+        if (e.target.dataset.p) {
+          currentPage = Number(e.target.dataset.p);
+          renderTable();
+        }
+      };
+    }
+
+    $('#search').oninput = e => {
+      const kw = e.target.value.trim().toLowerCase();
+      filtered = kw
+        ? data.filter((r, i) => i === 0 || r.some(c => String(c).toLowerCase().includes(kw)))
+        : [...data];
+      currentPage = 1;
+      renderTable();
+    };
+
+    async function load() {
+      $('#skeleton').hidden = false;
+      $('#table').hidden = true;
+      try {
+        const raw = await fetch(ENDPOINT, { cache: 'no-store' }).then(r => r.json());
+        if (JSON.stringify(raw) !== JSON.stringify(data)) {
+          data = raw;
+          filtered = [...data];
+          currentPage = 1;
+          renderTable();
+        }
+      } catch (e) { console.error(e); }
+      finally {
+        $('#skeleton').hidden = true;
+        $('#table').hidden = false;
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+    load();
+  </script>
+</body>
+</html>
