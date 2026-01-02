@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Rekap Peserta – Slider</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #444;
+      --accent: #0066cc;
+      --line: #e5e5e5;
+      --even: #f7f9fb;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--fg);
+    }
+    header {
+      padding: 4px 8px 3px;          /* dikit saja */
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #label {
+      font-weight: 600;
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+    #search {
+      flex: 1;
+      padding: 4px 6px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    #sliderWrap {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+    #slider {
+      display: flex;
+      width: max-content;
+      transition: transform 1s ease;
+    }
+    .card {
+      flex: 0 0 100vw;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      background: var(--bg);
+    }
+    .card:nth-child(even) { background: var(--even); }
+    .card a { color: var(--accent); text-decoration: none; }
+    .card a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <span id="label">Pelatihan Lainnya</span>
+    <input id="search" placeholder="Cari…" autocomplete="off"/>
+  </header>
+
+  <div id="sliderWrap">
+    <div id="slider"></div>
+  </div>
+
+  <script>
+    const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzGm1Bfs8s3LCRSccNMgJgmWoNbU3RoORMYTC3dLn-U6FilBmz-hw8xlBlK1L5R9Ng5Zw/exec';
+    const $ = s => document.querySelector(s);
+    const fmt = d => {
+      const t = new Date(d);
+      return isNaN(t) ? d : `${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')}/${String(t.getFullYear()).slice(-2)}`;
+    };
+
+    let data = [];
+    let filtered = [];
+    let currentIndex = 0;
+
+    function renderCards(list) {
+      const rows = list.slice(1);
+      const double = [...rows, ...rows];
+      $('#slider').innerHTML = double.map(row => {
+        const url = typeof row[2] === 'string' && row[2].startsWith('http') ? row[2] : '';
+        const text = url ? `<a href="${url}" target="_blank" rel="noreferrer">${row[0] || ''}</a>` : (row[0] || '');
+        return `<div class="card"><div>${text}</div><div>${row[1] || ''}</div></div>`;
+      }).join('');
+    }
+
+    function slide() {
+      const slider = $('#slider');
+      const w = slider.children[0]?.offsetWidth || 0;
+      if (!w) return;
+      currentIndex++;
+      slider.style.transform = `translateX(-${currentIndex * w}px)`;
+      if (currentIndex >= filtered.length - 1) {
+        setTimeout(() => {
+          slider.style.transition = 'none';
+          slider.style.transform = 'translateX(0)';
+          currentIndex = 0;
+          setTimeout(() => slider.style.transition = 'transform 1s ease', 50);
+        }, 1000);
+      }
+    }
+
+    $('#search').oninput = e => {
+      const kw = e.target.value.trim().toLowerCase();
+      filtered = kw
+        ? data.filter((r, i) => i === 0 || r.some(c => String(c).toLowerCase().includes(kw)))
+        : [...data];
+      renderCards(filtered);
+      currentIndex = 0;
+      $('#slider').style.transform = 'translateX(0)';
+    };
+
+    async function load() {
+      try {
+        const raw = await fetch(ENDPOINT, { cache: 'no-store' }).then(r => r.json());
+        if (JSON.stringify(raw) !== JSON.stringify(data)) {
+          data = raw;
+          filtered = [...data];
+          renderCards(filtered);
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+    load();
+    setInterval(slide, 5000);
+  </script>
+</body>
+</html>
