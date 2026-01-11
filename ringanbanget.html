@@ -23,7 +23,7 @@
       flex-direction: column;
       background: var(--bg);
       color: var(--fg);
-      padding: 0;              /* margin 0 langsung di body */
+      padding: 0;
     }
     h2 {
       text-align: center;
@@ -36,7 +36,7 @@
       display: flex;
       align-items: center;
       gap: 4px;
-      padding: 3px 4px 3px 4px;
+      padding: 3px 4px;
       border-bottom: 1px solid var(--line);
     }
     #search {
@@ -60,7 +60,7 @@
     .table-wrapper {
       flex: 1 1 auto;
       overflow: auto;
-      background: var(--bg);   /* hindari flick putih-abu saat scroll */
+      background: var(--bg);
     }
     table {
       width: 100%;
@@ -68,7 +68,7 @@
       table-layout: auto;
     }
     th, td {
-      padding: 3px 4px;        /* rapatkan sel */
+      padding: 3px 4px;
       border-bottom: 1px solid var(--line);
       font-size: 1rem;
       line-height: 1.15;
@@ -82,21 +82,11 @@
       background: var(--accent);
       color: #fff;
       font-weight: 600;
-      box-shadow: 0 1px 0 0 rgba(0,0,0,.08); /* minimalis */
+      box-shadow: 0 1px 0 0 rgba(0,0,0,.08);
     }
     tbody tr:nth-child(even) td { background: var(--even); }
-td, th {
-  max-width: 300px; /* Atur sesuai kebutuhan */
-  word-wrap: break-word;
-}
-    }
-    /* kolom ke-3 (link) disembunyikan tetap ada di DOM */
-    th:nth-child(3), td:nth-child(3) { display: none; }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
-
-    /* skeleton tidak pernah ditampilkan lagi */
-    #skeleton { display: none; }
 
     #paging {
       flex: 0 0 var(--pgH);
@@ -133,7 +123,6 @@ td, th {
   </header>
 
   <main>
-    <!-- skeleton dihilangkan -->
     <div class="table-wrapper">
       <table id="table"></table>
     </div>
@@ -142,7 +131,7 @@ td, th {
   <div id="paging"></div>
 
   <script>
-    /* ==========  SCRIPT TETAP APA ADANYA  ========== */
+    /* ==========  KONFIGURASI  ========== */
     const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzGm1Bfs8s3LCRSccNMgJgmWoNbU3RoORMYTC3dLn-U6FilBmz-hw8xlBlK1L5R9Ng5Zw/exec';
     const ROWS_PER_PAGE = 4;
 
@@ -152,10 +141,11 @@ td, th {
       return isNaN(t) ? d : `${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')}/${String(t.getFullYear()).slice(-2)}`;
     };
 
-    let data = [];
-    let filtered = [];
+    let data = [];        // semua data dari sheet
+    let filtered = [];    // data setelah filter
     let currentPage = 1;
 
+    /* ----------  RENDER TABEL (TANPA KOLOM 3)  ---------- */
     function renderTable() {
       const head = filtered[0] || [];
       const start = (currentPage - 1) * ROWS_PER_PAGE + 1;
@@ -163,19 +153,31 @@ td, th {
       const pageRows = filtered.slice(0, 1).concat(filtered.slice(start, end));
 
       $('#table').innerHTML = pageRows.map((row, i) =>
-        `<tr>${row.map((cell, j) => {
-          if (i === 0) return `<th>${cell}</th>`;
-          if (j === 0 && typeof row[2] === 'string' && row[2].startsWith('http'))
-            return `<td><a href="${row[2]}" target="_blank" rel="noreferrer">${cell}</a></td>`;
-          if (j === 0 || j === 4) return `<td>${fmt(cell)}</td>`;
-          return `<td>${cell}</td>`;
-        }).join('')}</tr>`
+        `<tr>${
+          row
+            .filter((_, idx) => idx !== 2)   // buang kolom 3 (index 2)
+            .map((cell, j) => {
+               if (i === 0) return `<th>${cell}</th>`;
+
+               /* kolom 0 (nomor) jadikan link pakai data kolom 3 asli */
+               if (j === 0) {
+                 const url = row[2];           // kolom 3 asli masih tersedia di `row`
+                 if (typeof url === 'string' && url.startsWith('http')) {
+                   return `<td><a href="${url}" target="_blank" rel="noreferrer">${cell}</a></td>`;
+                 }
+               }
+               /* kolom 0 & 3 (setelah filter) adalah tanggal */
+               if (j === 0 || j === 3) return `<td>${fmt(cell)}</td>`;
+               return `<td>${cell}</td>`;
+            }).join('')
+        }</tr>`
       ).join('');
 
       $('#count').textContent = filtered.length > 0 ? filtered.length - 1 : 0;
       renderPaging();
     }
 
+    /* ----------  RENDER PAGINASI  ---------- */
     function renderPaging() {
       const totalRows = filtered.length - 1;
       if (totalRows <= 0) { $('#paging').innerHTML = ''; return; }
@@ -187,10 +189,9 @@ td, th {
       for (let p = 1; p <= totalPage; p++) {
         html += `<button class="${p === currentPage ? 'active' : ''}" data-p="${p}">${p}</button>`;
       }
-
       if (currentPage < totalPage) html += `<button data-p="${currentPage+1}">›</button>`;
-      $('#paging').innerHTML = html;
 
+      $('#paging').innerHTML = html;
       $('#paging').onclick = e => {
         if (e.target.dataset.p) {
           currentPage = Number(e.target.dataset.p);
@@ -199,6 +200,7 @@ td, th {
       };
     }
 
+    /* ----------  FILTER / PENCARIAN  ---------- */
     $('#search').oninput = e => {
       const kw = e.target.value.trim().toLowerCase();
       filtered = kw
@@ -208,6 +210,7 @@ td, th {
       renderTable();
     };
 
+    /* ----------  AMBIL DATA DARI GOOGLE SHEETS  ---------- */
     async function load() {
       try {
         const raw = await fetch(ENDPOINT, { cache: 'no-store' }).then(r => r.json());
@@ -220,6 +223,7 @@ td, th {
       } catch (e) { console.error(e); }
     }
 
+    /* ----------  AUTO-REFRESH KETIKA TAB AKTIF  ---------- */
     document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
     load();
   </script>
