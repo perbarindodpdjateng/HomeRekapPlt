@@ -85,12 +85,10 @@
       box-shadow: 0 1px 0 0 rgba(0,0,0,.08); /* minimalis */
     }
     tbody tr:nth-child(even) td { background: var(--even); }
-    /* kolom ke-2 dibuat lebih sempit */
-    th:nth-child(2), td:nth-child(2) {
-      width: 5em;
-      white-space: normal;
-      overflow: hidden;
-      text-overflow: ellipsis;
+td, th {
+  max-width: 300px; /* Atur sesuai kebutuhan */
+  word-wrap: break-word;
+}
     }
     /* kolom ke-3 (link) disembunyikan tetap ada di DOM */
     th:nth-child(3), td:nth-child(3) { display: none; }
