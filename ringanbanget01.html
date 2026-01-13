@@ -25,12 +25,6 @@
       color: var(--fg);
       padding: 0;
     }
-    h2 {
-      text-align: center;
-      font-size: 1.3em;
-      padding: .2em 0 .1em;
-      font-weight: 600;
-    }
     header {
       flex: 0 0 auto;
       display: flex;
@@ -145,20 +139,22 @@
     let filtered = [];
     let currentPage = 1;
 
-    /* ----------  RENDER TABEL  ---------- */
+    /* ----------  RENDER TABEL (KOLOM KE-2 / "Tanggal" DISEMBUNYIKAN)  ---------- */
     function renderTable() {
       const start = (currentPage - 1) * ROWS_PER_PAGE + 1;
       const end   = start + ROWS_PER_PAGE;
       const pageRows = filtered.slice(0, 1).concat(filtered.slice(start, end));
 
       $('#table').innerHTML = pageRows.map((row, i) => {
+        // buang kolom ke-2 (idx=1) & kolom terakhir (🌐)
+        const kept = row.filter((_, idx) => idx !== 1 && idx !== row.length - 1);
         if (i === 0) { // header
           return `<tr>${
-            row.map((h, idx) => idx < 2 ? `<th>${h}</th>` : '').join('') +
-            row.map((h, idx) => idx >= 2 ? `<th>${h}</th>` : '').join('')
+            kept.map((h, idx) => idx < 2 ? `<th>${h}</th>` : '').join('') +
+            kept.map((h, idx) => idx >= 2 ? `<th>${h}</th>` : '').join('')
           }</tr>`;
         }
-        const [c0, c1, c2, ...rest] = row;
+        const [c0, c1, c2, ...rest] = kept;
         const link = (typeof c2 === 'string' && c2.startsWith('http'))
           ? `<a href="${c2}" target="_blank" rel="noreferrer">${c0}</a>` : c0;
 
